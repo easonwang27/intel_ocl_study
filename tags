@@ -1,0 +1,27 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ARRAY_SIZE	add.c	/^const int ARRAY_SIZE =1000;$/;"	v
+CC	Makefile	/^CC=gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-std=c99 -Wall -DUNIX -g -DDEBUG$/;"	m
+Chr_error	add.c	10;"	d	file:
+Cleanup	add.c	/^void Cleanup(cl_context context,cl_command_queue commandQueue,cl_program program,cl_kernel kernel,$/;"	f	signature:(cl_context context,cl_command_queue commandQueue,cl_program program,cl_kernel kernel, cl_mem memObjects[3])
+CreateCommandQueue	add.c	/^cl_command_queue CreateCommandQueue(cl_context context,cl_device_id device)$/;"	f	signature:(cl_context context,cl_device_id device)
+CreateContext	add.c	/^cl_context CreateContext(cl_device_id *device)$/;"	f	signature:(cl_device_id *device)
+CreateMemObjects	add.c	/^bool CreateMemObjects(cl_context context,cl_mem  memObjects[3],float *a,float*b)$/;"	f	signature:(cl_context context,cl_mem memObjects[3],float *a,float*b)
+CreateProgram	add.c	/^cl_program CreateProgram(cl_context context,cl_device_id device,$/;"	f	signature:(cl_context context,cl_device_id device, const char *fileName)
+DARWIN	Makefile	/^DARWIN = $(strip $(findstring DARWIN, $(OS)))$/;"	m
+INC_DIRS	Makefile	/^   INC_DIRS=. $(AMDAPPSDKROOT)\/include$/;"	m
+INC_DIRS	Makefile	/^   INC_DIRS=. $(NVSDKCOMPUTE_ROOT)\/OpenCL\/common\/inc$/;"	m
+LIBS	Makefile	/^	LIBS=-framework OpenCL$/;"	m
+LIBS	Makefile	/^LIBS=-lOpenCL$/;"	m
+LIB_DIRS	Makefile	/^		LIB_DIRS=$(AMDAPPSDKROOT)\/lib\/x86$/;"	m
+LIB_DIRS	Makefile	/^		LIB_DIRS=$(AMDAPPSDKROOT)\/lib\/x86_64$/;"	m
+OS	Makefile	/^OS = $(shell uname -s 2>\/dev\/null | tr [:lower:] [:upper:])$/;"	m
+PROC_TYPE	Makefile	/^PROC_TYPE = $(strip $(shell uname -m | grep 64))$/;"	m
+PROJ	Makefile	/^PROJ=add$/;"	m
+ReadKernelSourceFile	add.c	/^char *ReadKernelSourceFile(const char *filename,size_t *length)$/;"	f	signature:(const char *filename,size_t *length)
+main	add.c	/^int main(int argc,char **argv)$/;"	f	signature:(int argc,char **argv)

@@ -46,7 +46,7 @@ char *ReadKernelSourceFile(const char *filename,size_t *length)
  *3.根据设备创建上下文
  * */
 
-cl_context CreateContext()
+cl_context CreateContext(cl_device_id *device)
 {
 	cl_int errNum;
 	cl_uint numPlatforms;
@@ -58,7 +58,7 @@ cl_context CreateContext()
 		printf("Faild to find any OpenCL platforms.\n");
 		return NULL;
 	}
-	errNum =clGetDeviceIDs(firstPlatformId,CL_DEVICE_TYPE_CPU,0,NULL,NULL);
+	errNum =clGetDeviceIDs(firstPlatformId,CL_DEVICE_TYPE_CPU,1,device,NULL);
 	Chr_error();
 	if(errNum !=CL_SUCCESS)
 	{
@@ -70,7 +70,6 @@ cl_context CreateContext()
 
 		return NULL;
 	}Chr_error();
-#if 0
 	context = clCreateContext(NULL,1,device,NULL,NULL,&errNum);
 	Chr_error();
 	if(errNum != CL_SUCCESS)
@@ -80,7 +79,6 @@ cl_context CreateContext()
 	}
 	return context;
 
-#endif
 }
 
 /*在上下文可用的第一个设备额中创建命令队列
@@ -174,17 +172,14 @@ int main(int argc,char **argv)
 	cl_mem memObjects[3]={0,0,0};
 	cl_int errNum = 0;
 	cl_platform_id firstPlatformId;
-#if 0
+#if 1
 	context = CreateContext(&device);
 	if(context ==NULL)
 	{
 		printf("Failed to create OpenCL context.\n");
 		return 1;
 	}
-	cl_int errNum;
-	cl_uint numPlatforms;
-	cl_platform_id firstPlatformId;
-#endif
+#else
 	errNum = clGetPlatformIDs(1,&firstPlatformId,&numPlatforms);
 	if((errNum!= CL_SUCCESS||numPlatforms <=0))
 	{
@@ -205,7 +200,8 @@ int main(int argc,char **argv)
 		printf("create context error \n");
 		return 1;
 	}
-
+#endif
+#if 0
 	// 获取OpenCL设备，并创建命令
 	commandQueue=clCreateCommandQueue(context,device,0,NULL);
 	if(commandQueue ==NULL)
@@ -214,9 +210,9 @@ int main(int argc,char **argv)
 		Cleanup(context,commandQueue,program,kernel,memObjects);
 		return 1;
 	}
-#if 0
+#else
 	// 获取OpenCL设备，并创建命令
-	commandQueue = CreateCommandQueue(context ,&device);
+	commandQueue = CreateCommandQueue(context,device);
 	if(commandQueue ==NULL)
 	{
 		Cleanup(context,commandQueue,program,kernel,memObjects);

@@ -46,7 +46,7 @@ char *ReadKernelSourceFile(const char *filename,size_t *length)
  *3.根据设备创建上下文
  * */
 
-cl_context CreateContext(cl_device_id *device)
+cl_context CreateContext()
 {
 	cl_int errNum;
 	cl_uint numPlatforms;
@@ -58,19 +58,20 @@ cl_context CreateContext(cl_device_id *device)
 		printf("Faild to find any OpenCL platforms.\n");
 		return NULL;
 	}
-	errNum =clGetDeviceIDs(firstPlatformId,CL_DEVICE_TYPE_ALL,1,device,NULL);
+	errNum =clGetDeviceIDs(firstPlatformId,CL_DEVICE_TYPE_CPU,0,NULL,NULL);
 	Chr_error();
 	if(errNum !=CL_SUCCESS)
 	{
 		printf("this is no Gpu,try CPU....\n");
-	Chr_error();}
+	}
 	if(errNum != CL_SUCCESS)
 	{
 		printf("there is NO GPU or CPU\n");
 
 		return NULL;
 	}Chr_error();
-	context = clCreateContext(NULL,1,*device,NULL,NULL,&errNum);
+#if 0
+	context = clCreateContext(NULL,1,device,NULL,NULL,&errNum);
 	Chr_error();
 	if(errNum != CL_SUCCESS)
 	{
@@ -78,6 +79,8 @@ cl_context CreateContext(cl_device_id *device)
 		return NULL;
 	}
 	return context;
+
+#endif
 }
 
 /*在上下文可用的第一个设备额中创建命令队列
@@ -166,15 +169,52 @@ int main(int argc,char **argv)
 	cl_command_queue commandQueue =0;
 	cl_program program =0;
 	cl_device_id device =0;
+	cl_uint numPlatforms = 0;
 	cl_kernel kernel =0;
 	cl_mem memObjects[3]={0,0,0};
-	cl_int errNum;
+	cl_int errNum = 0;
+	cl_platform_id firstPlatformId;
+#if 0
 	context = CreateContext(&device);
 	if(context ==NULL)
 	{
 		printf("Failed to create OpenCL context.\n");
 		return 1;
 	}
+	cl_int errNum;
+	cl_uint numPlatforms;
+	cl_platform_id firstPlatformId;
+#endif
+	errNum = clGetPlatformIDs(1,&firstPlatformId,&numPlatforms);
+	if((errNum!= CL_SUCCESS||numPlatforms <=0))
+	{
+		printf("Faild to find any OpenCL platforms.\n");
+		return 1;
+	}
+	cl_uint num_devices;
+	errNum =clGetDeviceIDs(firstPlatformId,CL_DEVICE_TYPE_CPU,1,&device,NULL);
+	if(errNum !=CL_SUCCESS)
+	{
+		printf("this is no Gpu,try CPU....\n");
+		return 1;
+	}
+
+	context = clCreateContext(NULL,1,&device,NULL,NULL,&errNum);
+	if(errNum != CL_SUCCESS)
+	{
+		printf("create context error \n");
+		return 1;
+	}
+
+	// 获取OpenCL设备，并创建命令
+	commandQueue=clCreateCommandQueue(context,device,0,NULL);
+	if(commandQueue ==NULL)
+	{
+		printf("create commandqueue  error \n");
+		Cleanup(context,commandQueue,program,kernel,memObjects);
+		return 1;
+	}
+#if 0
 	// 获取OpenCL设备，并创建命令
 	commandQueue = CreateCommandQueue(context ,&device);
 	if(commandQueue ==NULL)
@@ -182,13 +222,16 @@ int main(int argc,char **argv)
 		Cleanup(context,commandQueue,program,kernel,memObjects);
 		return 1;
 	}
+#endif
 	//创建Opencl程序
 	program = CreateProgram(context,device,"add.cl");
 	if(program ==NULL)
 	{
+		printf("create program  error \n");
 		Cleanup(context,commandQueue,program,kernel,memObjects);
 		return 1;
 	}
+
 	//创建OpenCL内核
 	kernel = clCreateKernel(program,"vector_add",NULL);
 	if(kernel ==NULL)

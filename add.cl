@@ -1,4 +1,4 @@
-_kernel void vector_add(global const float *a,global const float*b,
+__kernel void vector_add(global const float *a,global const float*b,
 					global float *result)
 {
 	int gid = get_global_id(0);

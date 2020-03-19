@@ -53,7 +53,7 @@ cl_context CreateContext(cl_device_id *device)
 	cl_uint numPlatforms;
 	cl_platform_id firstPlatformId;
 	cl_context context =NULL;
-	errNum = clGetPlatformIDs(1,&firstPlatformId,&numPlatforms);
+	errNum = clGetPlatformIDs(0,&firstPlatformId,&numPlatforms);
 	if((errNum!= CL_SUCCESS||numPlatforms <=0))
 	{
 		printf("Faild to find any OpenCL platforms.\n");

@@ -8,6 +8,7 @@
 #endif
 
 #define Chr_error() printf("============>%d\n",__LINE__)
+
 const int ARRAY_SIZE =1000;
 
 char *ReadKernelSourceFile(const char *filename,size_t *length)
@@ -19,7 +20,7 @@ char *ReadKernelSourceFile(const char *filename,size_t *length)
 	file= fopen(filename,"rb");
 	if(file ==NULL)
 	{
-		//printf("%s t %d;Can,t opeb %s\n",__FILE__,__LINE__-2,filename);
+		printf("%s t %d;Can,t opeb %s\n",__FILE__,__LINE__-2,filename);
 		return NULL;
 	}
 	fseek(file,0,SEEK_END);
@@ -30,7 +31,7 @@ char *ReadKernelSourceFile(const char *filename,size_t *length)
 	ret = fread(sourceString,sourceLength,1,file);
 	if(ret == 0)
 	{
-		//printf("%s at %d:can't open %s\n",__FILE__,__LINE__);
+		printf("%s at %d:can't open %s\n",__FILE__,__LINE__);
 	}
 	fclose(file);
 	if(length!=0)

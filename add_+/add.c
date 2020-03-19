@@ -127,8 +127,9 @@ cl_program CreateProgram(cl_context context,cl_device_id device,
 		printf("Failed to create CL program form source.\n");
 		return NULL;
 	}
-
-	errNum = clBuildProgram(program,0,NULL,NULL,NULL,NULL);
+	//增加编译链接选项:-cl-std、-cl-mad-enable、-Werror
+	const char options[] = "-cl-std=CL1.1 -cl-mad-enable -Werror";
+	errNum = clBuildProgram(program,1,&device,options,NULL,NULL);
 	if(errNum !=CL_SUCCESS)
 	{
 		char buildLog[16384];

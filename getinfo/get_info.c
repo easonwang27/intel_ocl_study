@@ -8,7 +8,8 @@ int main()
 	cl_uint num_platform;
 	cl_int err;
 	err = clGetPlatformIDs(0,NULL,&num_platform);
-	platform = (cl_platform_id *)malloc(sizeof(cl_platform_id))*num_platform;
+	platform =(cl_platform_id *)malloc(sizeof(cl_platform_id)*num_platform);
+
 	err = clGetPlatformIDs(num_platform,platform,NULL);
 	for(int i = 0;i < num_platform;i++)
 	{
@@ -23,7 +24,7 @@ int main()
 		printf("\n CL_PLATFORM_VENDOR: %s\n",PVendor);
 		err = clGetPlatformInfo(platform[i],CL_PLATFORM_VERSION,0,NULL,&size);
 		char *PVersion = (char *)malloc(size);
-		err = clGetPlatformInfo(platform[i],CL_PLATFORM_VERSION,size,Pversion,NULL);
+		err = clGetPlatformInfo(platform[i],CL_PLATFORM_VERSION,size,PVersion,NULL);
 		printf("\n CL_PLATFORM_VERSION: %s\n",PVersion);
 		err = clGetPlatformInfo(platform[i],CL_PLATFORM_PROFILE,0,NULL,&size);
 		char *PProfile = (char *)malloc(size);

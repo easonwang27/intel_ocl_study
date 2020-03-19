@@ -51,16 +51,16 @@ cl_context CreateContext(cl_device_id *device)
 {
 	cl_int errNum;
 	cl_uint numPlatforms;
+	cl_uint NumDevice;
 	cl_platform_id firstPlatformId;
 	cl_context context =NULL;
-	errNum = clGetPlatformIDs(0,&firstPlatformId,&numPlatforms);
+	errNum = clGetPlatformIDs(1,&firstPlatformId,&numPlatforms);
 	if((errNum!= CL_SUCCESS||numPlatforms <=0))
 	{
 		printf("Faild to find any OpenCL platforms.\n");
 		return NULL;
 	}
 	errNum =clGetDeviceIDs(firstPlatformId,CL_DEVICE_TYPE_CPU,1,device,NULL);
-	Chr_error();
 	if(errNum !=CL_SUCCESS)
 	{
 		printf("this is no Gpu,try CPU....\n");
@@ -70,9 +70,23 @@ cl_context CreateContext(cl_device_id *device)
 		printf("there is NO GPU or CPU\n");
 
 		return NULL;
-	}Chr_error();
+	}
+	//两种方法的实现
+#if 0
 	context = clCreateContext(NULL,1,device,NULL,NULL,&errNum);
-	Chr_error();
+#else
+	cl_context_properties properites[] = {
+			CL_CONTEXT_PLATFORM,
+			(cl_context_properties)firstPlatformId,0
+	};
+
+	context = clCreateContextFromType(properites,CL_DEVICE_TYPE_ALL,NULL,NULL,&errNum);
+	NumDevice = 0;
+	size_t DeviceSize;
+	errNum = clGetContextInfo(context,CL_CONTEXT_NUM_DEVICES,sizeof(cl_uint),&NumDevice,NULL);
+	printf("Number of device in context :%d\n",NumDevice);
+#endif
+
 	if(errNum != CL_SUCCESS)
 	{
 		printf("create context error \n");

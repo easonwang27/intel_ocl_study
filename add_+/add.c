@@ -11,29 +11,30 @@
 
 const int ARRAY_SIZE =1000;
 
+//clGetProgramInfo
 int SaveProgramToBinary(cl_program program,const char *fileName)
 {
+	cl_uint err;
 	cl_uint numDevices =0;
 	err = clGetProgramInfo(program,CL_PROGRAM_NUM_DEVICES,sizeof(cl_uint),&numDevices,NULL);
 	cl_device_id *devices = (cl_device_id*)malloc(sizeof(cl_device_id)*numDevices);
 	err = clGetprogramInfo(program,CL_PROGRAM_DEVICES,sizeof(cl_device_id)*numDevices,devices,NULL);
 	size_t *programBinarySize=(size_t *)malloc(sizeof(size_t)*numDevices);
 	err= clGetProgramInfo(program,CL_PROGRAM_BINARY_SIZES,sizeof(size_t)*numDevices,programBinarySize,NULL);
-	unsigned char **programBinaries = (unsigned char **)malloc(sizeof(unsigned char *)numDevices);
+	unsigned char **programBinaries = (unsigned char **)malloc(sizeof(unsigned char )*numDevices);
 	for(cl_uint i =0;i < numDevices;i++)
 	{
-		programBinaries[i] = (unsigned char **)malloc(sizeof(unsigned char *)programBinarySize[i]);
-	
+		programBinaries[i] = (unsigned char **)malloc(sizeof(unsigned char )*programBinarySize[i]);
+
 	}
-	err = clGetProgram(program,CL_PROGRAM_BINARIES,sizeof(unsigned char **)numDevices,programBinaries,NULL);
+	err = clGetProgram(program,CL_PROGRAM_BINARIES,sizeof(unsigned char *)*numDevices,
+			programBinaries,NULL);
 
 	for(cl_uint i =0;i <numDevices;i++){
 		FILE *fp = fopen(fileName,"a+ ");
 		fwrite(programBinaries[i],1,programBinarySize[i],fp);
 		fclose(fp);
 	}
-
-
 
 }
 char *ReadKernelSourceFile(const char *filename,size_t *length)
@@ -163,6 +164,8 @@ cl_program CreateProgram(cl_context context,cl_device_id device,
 		clReleaseProgram(program);
 		return NULL;
 	}
+
+	SaveProgramToBinary(program,"hello.bin");
 	return program;
 
 }

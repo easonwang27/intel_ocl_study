@@ -154,6 +154,7 @@ int main() {
       exit(1);
    }
 
+   //read the kernel result
    /* Read and print the result */
    err = clEnqueueReadBuffer(queue, test_buffer, CL_TRUE, 0,
       sizeof(test), &test, 0, NULL, NULL);

@@ -1,6 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define PROGRAM_FILE "callback.cl"
-#define KERNEL_FUNC "callback"
+#define PROGRAM_FILE "profile_items.cl"
+#define KERNEL_FUNC "profile_items"
+
+#define NUM_INTS 4096
+#define NUM_ITEMS 512
+#define NUM_ITERATIONS 2000
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,32 +15,6 @@
 #else
 #include <CL/cl.h>
 #endif
-
-void CL_CALLBACK kernel_complete(cl_event e, cl_int status, void* data) {
-   printf("%s", (char*)data);
-
-}
-
-void CL_CALLBACK read_complete(cl_event e, cl_int status, void* data) {
-
-   int i;
-   cl_bool check;
-   float *buffer_data;
-
-   buffer_data = (float*)data;
-   check = CL_TRUE;
-   for(i=0; i<4096; i++) {
-	printf("buffer_data[i] = %f\n",buffer_data[i]);
-      if(buffer_data[i] != 3.0) {
-         check = CL_FALSE;
-         break;
-      }
-   }
-   if(check)
-      printf("The data has been initialized successfully.\n");
-   else
-      printf("The data has not been initialized successfully.\n");
-}
 
 /* Find a GPU or CPU associated with the first available platform */
 cl_device_id create_device() {
@@ -124,13 +102,23 @@ int main() {
    cl_command_queue queue;
    cl_program program;
    cl_kernel kernel;
-   cl_int err;
+   size_t num_items;
+   cl_int i, err, num_ints;
 
    /* Data and events */
-   char *kernel_msg;
-   float data[4096];
+   int data[NUM_INTS];
    cl_mem data_buffer;
-   cl_event kernel_event, read_event;
+   cl_event prof_event;
+   cl_ulong time_start, time_end, total_time;
+
+   /* Initialize data */
+   for(i=0; i<NUM_INTS; i++) {
+      data[i] = i;
+   }
+
+   /* Set number of data points and work-items */
+   num_ints = NUM_INTS;
+   num_items = NUM_ITEMS;
 
    /* Create a device and context */
    device = create_device();
@@ -148,9 +136,10 @@ int main() {
       exit(1);
    };
 
-   /* Create a write-only buffer to hold the output data */
-   data_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
-         sizeof(data), NULL, &err);
+   /* Create a buffer to hold data */
+   data_buffer = clCreateBuffer(context,
+         CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+         sizeof(data), data, &err);
    if(err < 0) {
       perror("Couldn't create a buffer");
       exit(1);
@@ -162,43 +151,41 @@ int main() {
       perror("Couldn't set a kernel argument");
       exit(1);
    };
+   clSetKernelArg(kernel, 1, sizeof(num_ints), &num_ints);
 
    /* Create a command queue */
-   queue = clCreateCommandQueue(context, device, 0, &err);
+   queue = clCreateCommandQueue(context, device,
+         CL_QUEUE_PROFILING_ENABLE, &err);
    if(err < 0) {
       perror("Couldn't create a command queue");
       exit(1);
    };
 
-   /* Enqueue kernel */
-   err = clEnqueueTask(queue, kernel, 0, NULL, &kernel_event);
-   if(err < 0) {
-      perror("Couldn't enqueue the kernel");
-      exit(1);
-   }
+   total_time = 0.0f;
+   for(i=0; i<NUM_ITERATIONS; i++) {
 
-   /* Read the buffer */
-   err = clEnqueueReadBuffer(queue, data_buffer, CL_FALSE, 0,
-      sizeof(data), &data, 0, NULL, &read_event);
-   if(err < 0) {
-      perror("Couldn't read the buffer");
-      exit(1);
-   }
+      /* Enqueue kernel */
+      clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &num_items,
+            NULL, 0, NULL, &prof_event);
+      if(err < 0) {
+         perror("Couldn't enqueue the kernel");
+         exit(1);
+      }
 
-   /* Set event handling routines */
-   kernel_msg = "The kernel finished successfully.\n\0";
-   err = clSetEventCallback(kernel_event, CL_COMPLETE,
-         &kernel_complete, kernel_msg);
-   if(err < 0) {
-      perror("Couldn't set callback for event");
-      exit(1);
+      /* Finish processing the queue and get profiling information */
+      clFinish(queue);
+      clGetEventProfilingInfo(prof_event, CL_PROFILING_COMMAND_START,
+            sizeof(time_start), &time_start, NULL);
+      clGetEventProfilingInfo(prof_event, CL_PROFILING_COMMAND_END,
+            sizeof(time_end), &time_end, NULL);
+      total_time += time_end - time_start;
    }
-   clSetEventCallback(read_event, CL_COMPLETE, &read_complete, data);
-   //clSetEventCallback(read_event, CL_RUNNING, &read_complete, data);
+   printf("Average time = %lu\n", total_time/NUM_ITERATIONS);
 
    /* Deallocate resources */
-   clReleaseMemObject(data_buffer);
+   clReleaseEvent(prof_event);
    clReleaseKernel(kernel);
+   clReleaseMemObject(data_buffer);
    clReleaseCommandQueue(queue);
    clReleaseProgram(program);
    clReleaseContext(context);
